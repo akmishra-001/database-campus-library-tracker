@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Campus Library &amp; Book Lending Tracker</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --surface: #121c30;
+      --surface-2: #18253f;
+      --border: rgba(148, 163, 184, 0.18);
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --cyan: #00e5ff;
+      --yellow: #dfff00;
+      --coral: #ff6f61;
+      --green: #22c55e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top left, rgba(0, 229, 255, 0.12), transparent 40%),
+                  radial-gradient(circle at bottom right, rgba(223, 255, 0, 0.08), transparent 40%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding: 18px 22px;
+      background: rgba(18, 28, 48, 0.78);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    header h1 {
+      font-size: 1.45rem;
+      color: var(--cyan);
+      letter-spacing: 0.3px;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    .badge {
+      background: rgba(0, 229, 255, 0.14);
+      color: var(--cyan);
+      border: 1px solid rgba(0, 229, 255, 0.35);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .stat-value {
+      font-size: 1.7rem;
+      font-weight: 700;
+      margin-top: 6px;
+      color: var(--yellow);
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 22px;
+    }
+
+    .panel h2 {
+      font-size: 1.08rem;
+      margin-bottom: 14px;
+      color: var(--text);
+    }
+
+    .issue-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    select, button {
+      font-family: inherit;
+      font-size: 0.92rem;
+      border-radius: 8px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+    }
+
+    select {
+      background: var(--surface-2);
+      color: var(--text);
+      min-width: 220px;
+      flex: 1;
+    }
+
+    button {
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.12s ease, opacity 0.15s ease;
+    }
+
+    button:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: var(--cyan);
+      color: #06101c;
+      border: none;
+    }
+
+    .btn-return {
+      background: rgba(34, 197, 94, 0.16);
+      color: #86efac;
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      padding: 6px 10px;
+      font-size: 0.82rem;
+    }
+
+    .toast {
+      margin-top: 12px;
+      font-size: 0.9rem;
+      min-height: 20px;
+    }
+
+    .toast.ok {
+      color: #86efac;
+    }
+
+    .toast.err {
+      color: var(--coral);
+    }
+
+    .tables-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 22px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      background: var(--surface-2);
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .pill-issued {
+      background: rgba(255, 111, 97, 0.18);
+      color: #fca5a5;
+      border: 1px solid rgba(255, 111, 97, 0.4);
+    }
+
+    .pill-returned {
+      background: rgba(34, 197, 94, 0.16);
+      color: #86efac;
+      border: 1px solid rgba(34, 197, 94, 0.35);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Campus Library &amp; Book Lending Tracker</h1>
+        <p>Live SQLite + Python Backend Dashboard • SQL &amp; DBMS Internship Project</p>
+      </div>
+      <span class="badge">SQLite Connected</span>
+    </header>
+
+    <section class="stats-grid" id="statsGrid">
+      <div class="stat-card"><div class="stat-label">Members</div><div class="stat-value" id="statMembers">-</div></div>
+      <div class="stat-card"><div class="stat-label">Book Titles</div><div class="stat-value" id="statBooks">-</div></div>
+      <div class="stat-card"><div class="stat-label">Total Copies</div><div class="stat-value" id="statCopies">-</div></div>
+      <div class="stat-card"><div class="stat-label">Issued Loans</div><div class="stat-value" id="statIssued">-</div></div>
+      <div class="stat-card"><div class="stat-label">Returned Loans</div><div class="stat-value" id="statReturned">-</div></div>
+    </section>
+
+    <section class="panel">
+      <h2>Issue a Book</h2>
+      <form class="issue-form" id="issueForm">
+        <select id="memberSelect" required>
+          <option value="">Select Member...</option>
+        </select>
+        <select id="bookSelect" required>
+          <option value="">Select Book...</option>
+        </select>
+        <button type="submit" class="btn-primary">Issue Book</button>
+      </form>
+      <div class="toast" id="toastMsg"></div>
+    </section>
+
+    <div class="tables-grid">
+      <section class="panel">
+        <h2>Loans &amp; Return Tracker</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Member</th>
+                <th>Book Title</th>
+                <th>Category</th>
+                <th>Issue Date</th>
+                <th>Return Date</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="loansBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Books Catalog &amp; Availability</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Category</th>
+                <th>Total Copies</th>
+                <th>Currently Issued</th>
+                <th>Available</th>
+                <th>Total Borrows</th>
+              </tr>
+            </thead>
+            <tbody id="booksBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const toastEl = document.getElementById("toastMsg");
+
+    function showToast(message, isError = false) {
+      toastEl.textContent = message;
+      toastEl.className = "toast " + (isError ? "err" : "ok");
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    async function loadDashboard() {
+      try {
+        const res = await fetch("/api/dashboard");
+        const data = await res.json();
+        if (!res.ok) {
+          showToast(data.error || "Failed to load dashboard.", true);
+          return;
+        }
+
+        document.getElementById("statMembers").textContent = data.stats.total_members;
+        document.getElementById("statBooks").textContent = data.stats.total_books;
+        document.getElementById("statCopies").textContent = data.stats.total_copies;
+        document.getElementById("statIssued").textContent = data.stats.issued_count;
+        document.getElementById("statReturned").textContent = data.stats.returned_count;
+
+        const memberSelect = document.getElementById("memberSelect");
+        const prevMember = memberSelect.value;
+        memberSelect.innerHTML = '<option value="">Select Member...</option>' +
+          data.members.map(m =>
+            `<option value="${m.member_id}">${escapeHtml(m.full_name)} (${escapeHtml(m.email)})</option>`
+          ).join("");
+        if (prevMember) memberSelect.value = prevMember;
+
+        const bookSelect = document.getElementById("bookSelect");
+        const prevBook = bookSelect.value;
+        bookSelect.innerHTML = '<option value="">Select Book...</option>' +
+          data.books.map(b => {
+            const avail = b.total_copies - b.active_issued;
+            return `<option value="${b.book_id}" ${avail <= 0 ? "disabled" : ""}>${escapeHtml(b.title)} — ${avail} avail</option>`;
+          }).join("");
+        if (prevBook) bookSelect.value = prevBook;
+
+        const loansBody = document.getElementById("loansBody");
+        loansBody.innerHTML = data.loans.map(l => {
+          const isIssued = l.status === "Issued";
+          const pillClass = isIssued ? "pill-issued" : "pill-returned";
+          const actionBtn = isIssued
+            ? `<button class="btn-return" onclick="markReturned(${l.loan_id})">Mark Returned</button>`
+            : `<span style="color: var(--muted); font-size: 0.82rem;">Completed</span>`;
+
+          return `
+            <tr>
+              <td>${l.loan_id}</td>
+              <td>${escapeHtml(l.member_name)}</td>
+              <td>${escapeHtml(l.book_title)}</td>
+              <td>${escapeHtml(l.category)}</td>
+              <td>${escapeHtml(l.issue_date)}</td>
+              <td>${escapeHtml(l.return_date || "-")}</td>
+              <td><span class="pill ${pillClass}">${escapeHtml(l.status)}</span></td>
+              <td>${actionBtn}</td>
+            </tr>
+          `;
+        }).join("");
+
+        const booksBody = document.getElementById("booksBody");
+        booksBody.innerHTML = data.books.map(b => {
+          const avail = b.total_copies - b.active_issued;
+          return `
+            <tr>
+              <td>${b.book_id}</td>
+              <td>${escapeHtml(b.title)}</td>
+              <td>${escapeHtml(b.author)}</td>
+              <td>${escapeHtml(b.category)}</td>
+              <td>${b.total_copies}</td>
+              <td>${b.active_issued}</td>
+              <td><strong>${avail}</strong></td>
+              <td>${b.total_borrows}</td>
+            </tr>
+          `;
+        }).join("");
+      } catch (err) {
+        showToast("Network error while loading data.", true);
+      }
+    }
+
+    document.getElementById("issueForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const member_id = document.getElementById("memberSelect").value;
+      const book_id = document.getElementById("bookSelect").value;
+
+      if (!member_id || !book_id) {
+        showToast("Please select both a member and a book.", true);
+        return;
+      }
+
+      const res = await fetch("/api/loans/issue", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ member_id: Number(member_id), book_id: Number(book_id) })
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        showToast(result.error || "Could not issue book.", true);
+        return;
+      }
+      showToast(result.message || "Book issued!");
+      await loadDashboard();
+    });
+
+    async function markReturned(loanId) {
+      const res = await fetch("/api/loans/return", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ loan_id: Number(loanId) })
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        showToast(result.error || "Could not mark returned.", true);
+        return;
+      }
+      showToast(result.message || "Book returned!");
+      await loadDashboard();
+    }
+
+    loadDashboard();
+  </script>
+</body>
+</html>
